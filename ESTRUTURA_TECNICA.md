@@ -30,6 +30,13 @@ Para lidar com essa reconexão, implementamos a seguinte máquina de estados:
 2.  **Verificação de Estado (PID)**:
     *   Se o PID for `0x0002`: O dispositivo já está em modo Bootloader. **Pula para o passo 5**.
     *   Se o PID for outro (ex: `0x80c2`): O dispositivo está em modo App (rodando firmware). **Prossegue para o passo 3**.
+
+    > ⚠️ **CRÍTICO (firmware):** o app **precisa** subir com PID **≠ `0x0002`**. O
+    > default do core arduino-esp32 3.3.8 (`USB.cpp`) é `0x0002` — o **mesmo** PID
+    > do bootloader ROM. Se o app subir como `0x0002`, este passo o confunde com o
+    > bootloader, **pula o reset**, e o esptool dá timeout no firmware rodando. Por
+    > isso o firmware é compilado com **`-DUSB_PID=0x80C2`** (ver `flash_firmware.bat`),
+    > o mesmo PID de app que a BFMIDI_V11 usava e que os filtros aqui esperam.
 3.  **Pulso de Boot (Manual)**:
     *   Conectamos brevemente a 115200 bps.
     *   Enviamos a sequência DTR/RTS específica para colocar o chip em modo download.
